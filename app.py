@@ -4,7 +4,7 @@ import pandas as pd
 
 @st.cache_resource
 def load_model():
-    with open("telco_model.pkl", "rb") as f:
+    with open("telco_model (2).pkl", "rb") as f:
         data = pickle.load(f)
     return data["model"], data["feature_columns"]
 
