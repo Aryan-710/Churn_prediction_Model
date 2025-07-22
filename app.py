@@ -5,7 +5,7 @@ import pandas as pd
 # Load trained model
 @st.cache_resource
 def load_model():
-    with open("telco_model.pkl", "rb") as f:
+    with open("telco_model (2).pkl", "rb") as f:
         return pickle.load(f)
 
 model = load_model()
