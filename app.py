@@ -12,9 +12,16 @@ def load_model():
 
 model = load_model()
 
+# Define the exact feature columns used during training
+# (⚠️ Replace these with the actual features used to train your model)
+feature_columns = [
+    'gender_Male', 'SeniorCitizen', 'Partner_Yes', 'Dependents_Yes',
+    'tenure', 'MonthlyCharges'
+]
+
 # Preprocessing function
 def preprocess_input(gender, senior_citizen, partner, dependents, tenure, monthly_charges):
-    # Example of encoding
+    # Encode categorical variables
     data = {
         'gender_Male': 1 if gender == "Male" else 0,
         'SeniorCitizen': 1 if senior_citizen == "Yes" else 0,
@@ -24,14 +31,14 @@ def preprocess_input(gender, senior_citizen, partner, dependents, tenure, monthl
         'MonthlyCharges': monthly_charges
     }
 
-    # Add missing dummy variables if needed
+    # Create DataFrame with all feature columns in correct order
     df = pd.DataFrame([data])
-    # If training used more dummy columns, add them with default 0
-    for col in model.feature_names_in_:
+    for col in feature_columns:
         if col not in df.columns:
-            df[col] = 0
+            df[col] = 0  # Add missing columns with default value
+    df = df[feature_columns]  # Ensure correct column order
 
-    return df[model.feature_names_in_]
+    return df
 
 # Streamlit UI
 st.title("📞 Telco Customer Churn Prediction App")
@@ -52,4 +59,4 @@ if st.button("Predict"):
         else:
             st.success("✅ The customer is NOT likely to churn.")
     except Exception as e:
-        st.error(f"Error during prediction: {e}")
+        st.error(f"❌ Error during prediction: {e}")
