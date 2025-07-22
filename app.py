@@ -1,9 +1,8 @@
 import streamlit as st
 import pickle
-import numpy as np
 import pandas as pd
 
-# Load the model
+# Load the trained model
 @st.cache_resource
 def load_model():
     with open("telco_model.pkl", "rb") as file:
@@ -12,48 +11,63 @@ def load_model():
 
 model = load_model()
 
-# Define the exact feature columns used during training
-# (⚠️ Replace these with the actual features used to train your model)
-feature_columns = [
-    'gender_Male', 'SeniorCitizen', 'Partner_Yes', 'Dependents_Yes',
-    'tenure', 'MonthlyCharges'
-]
+# Load feature columns used during training
+@st.cache_resource
+def load_feature_columns():
+    with open("feature_columns.pkl", "rb") as file:
+        feature_columns = pickle.load(file)
+    return feature_columns
 
-# Preprocessing function
-def preprocess_input(gender, senior_citizen, partner, dependents, tenure, monthly_charges):
-    # Encode categorical variables
-    data = {
-        'gender_Male': 1 if gender == "Male" else 0,
-        'SeniorCitizen': 1 if senior_citizen == "Yes" else 0,
-        'Partner_Yes': 1 if partner == "Yes" else 0,
-        'Dependents_Yes': 1 if dependents == "Yes" else 0,
-        'tenure': tenure,
-        'MonthlyCharges': monthly_charges
-    }
+feature_columns = load_feature_columns()
 
-    # Create DataFrame with all feature columns in correct order
-    df = pd.DataFrame([data])
+# Preprocess user input
+def preprocess_input(user_input):
+    df = pd.DataFrame([user_input])
+    df = pd.get_dummies(df)  # One-hot encode user input
+
+    # Add missing columns
     for col in feature_columns:
         if col not in df.columns:
-            df[col] = 0  # Add missing columns with default value
-    df = df[feature_columns]  # Ensure correct column order
+            df[col] = 0
+
+    # Ensure column order
+    df = df[feature_columns]
 
     return df
 
 # Streamlit UI
 st.title("📞 Telco Customer Churn Prediction App")
+st.write("Fill the details below to predict if the customer is likely to churn.")
 
+# Input fields
 gender = st.selectbox("Gender", ["Male", "Female"])
 senior_citizen = st.selectbox("Senior Citizen?", ["No", "Yes"])
 partner = st.selectbox("Has Partner?", ["No", "Yes"])
 dependents = st.selectbox("Has Dependents?", ["No", "Yes"])
 tenure = st.slider("Tenure (Months)", 0, 72, 12)
 monthly_charges = st.number_input("Monthly Charges ($)", 0.0, 200.0, 50.0)
+contract = st.selectbox("Contract", ["Month-to-month", "One year", "Two year"])
+payment_method = st.selectbox("Payment Method", [
+    "Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"
+])
 
+# Predict button
 if st.button("Predict"):
+    user_input = {
+        "gender": gender,
+        "SeniorCitizen": 1 if senior_citizen == "Yes" else 0,
+        "Partner": partner,
+        "Dependents": dependents,
+        "tenure": tenure,
+        "MonthlyCharges": monthly_charges,
+        "Contract": contract,
+        "PaymentMethod": payment_method
+    }
+
     try:
-        input_df = preprocess_input(gender, senior_citizen, partner, dependents, tenure, monthly_charges)
-        prediction = model.predict(input_df)[0]
+        processed_input = preprocess_input(user_input)
+        prediction = model.predict(processed_input)[0]
+
         if prediction == 1:
             st.error("⚠️ The customer is likely to churn.")
         else:
