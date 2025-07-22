@@ -2,42 +2,43 @@ import streamlit as st
 import pickle
 import pandas as pd
 
-# Load the trained model
+# Load your trained ML model
 @st.cache_resource
 def load_model():
-    with open("telco_model.pkl", "rb") as file:
+    with open("telco_model.pkl", "rb") as file:  # Replace with your actual model file
         model = pickle.load(file)
     return model
 
 model = load_model()
 
-# Load feature columns used during training
-@st.cache_resource
-def load_feature_columns():
-    with open("feature_columns.pkl", "rb") as file:
-        feature_columns = pickle.load(file)
-    return feature_columns
+# Hardcode feature names used during training
+feature_columns = [
+    'gender_Female', 'gender_Male', 'SeniorCitizen',
+    'Partner_No', 'Partner_Yes', 'Dependents_No', 'Dependents_Yes',
+    'tenure', 'MonthlyCharges',
+    'Contract_Month-to-month', 'Contract_One year', 'Contract_Two year',
+    'PaymentMethod_Bank transfer (automatic)', 'PaymentMethod_Credit card (automatic)',
+    'PaymentMethod_Electronic check', 'PaymentMethod_Mailed check'
+]
 
-feature_columns = load_feature_columns()
-
-# Preprocess user input
+# Function to preprocess user inputs
 def preprocess_input(user_input):
     df = pd.DataFrame([user_input])
-    df = pd.get_dummies(df)  # One-hot encode user input
+    df = pd.get_dummies(df)
 
-    # Add missing columns
+    # Add any missing columns (set them to 0)
     for col in feature_columns:
         if col not in df.columns:
             df[col] = 0
 
-    # Ensure column order
+    # Ensure correct column order
     df = df[feature_columns]
 
     return df
 
 # Streamlit UI
 st.title("📞 Telco Customer Churn Prediction App")
-st.write("Fill the details below to predict if the customer is likely to churn.")
+st.write("Enter customer details to predict if they are likely to churn.")
 
 # Input fields
 gender = st.selectbox("Gender", ["Male", "Female"])
@@ -51,7 +52,7 @@ payment_method = st.selectbox("Payment Method", [
     "Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"
 ])
 
-# Predict button
+# Prediction button
 if st.button("Predict"):
     user_input = {
         "gender": gender,
