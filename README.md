@@ -20,7 +20,7 @@ An end-to-end machine learning system that predicts customer churn, explains *wh
 
 **Deployment** - Model saved as `telecom_model.pkl` and served via a Streamlit web app with two tabs — live prediction and global insights dashboard.
 
-🚀 **Live App:** [Click here](https://customerchurnprediction-ks8axfopv784xvtxm7wra8.streamlit.app/)
+🚀 **Live App:** [Click here](https://churnpredictionmodel-rrxi7d6izqpafhzhnv5hzp.streamlit.app/)
 
 ---
 
